@@ -19,7 +19,10 @@ class Ollama {
   /// The final response object will include statistics and additional
   /// data from the request.
   Stream<CompletionChunk> generate(String prompt,
-      {required String model, String? system, bool stream = true}) async* {
+      {required String model,
+      String? system,
+      bool stream = true,
+      List<int>? context}) async* {
     final url = baseUrl.resolve('api/generate');
 
     // Open a POST request to a server and send the request body.
@@ -31,6 +34,7 @@ class Ollama {
       'model': model,
       'system': system,
       'stream': stream,
+      'context': context,
     }));
 
     final response = await request.close();
