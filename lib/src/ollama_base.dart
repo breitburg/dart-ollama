@@ -18,11 +18,14 @@ class Ollama {
   /// This is a streaming endpoint, so will be a series of responses.
   /// The final response object will include statistics and additional
   /// data from the request.
-  Stream<CompletionChunk> generate(String prompt,
-      {required String model,
-      String? system,
-      bool stream = true,
-      List<int>? context}) async* {
+  Stream<CompletionChunk> generate(
+    String prompt, {
+    required String model,
+    String? system,
+    String? format,
+    bool stream = true,
+    List<int>? context,
+  }) async* {
     final url = baseUrl.resolve('api/generate');
 
     // Open a POST request to a server and send the request body.
@@ -35,6 +38,7 @@ class Ollama {
       'system': system,
       'stream': stream,
       'context': context,
+      'format': format,
     }));
 
     final response = await request.close();
@@ -48,10 +52,22 @@ class Ollama {
   /// Ask a question and get a single response.
   ///
   /// This is a convenience method that will return the last response
-  Future<CompletionChunk> ask(String prompt,
-      {required String model, String? system}) async {
-    final stream =
-        generate(prompt, model: model, system: system, stream: false);
+  Future<CompletionChunk> ask(
+    String prompt, {
+    required String model,
+    String? system,
+    String? format,
+    List<int>? context,
+  }) async {
+    final stream = generate(
+      prompt,
+      model: model,
+      system: system,
+      stream: false,
+      context: context,
+      format: format,
+    );
+
     return await stream.last;
   }
 }
