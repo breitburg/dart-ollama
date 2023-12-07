@@ -63,9 +63,9 @@ class Ollama {
       prompt,
       model: model,
       system: system,
-      stream: false,
       context: context,
       format: format,
+      stream: false,
     );
 
     return await stream.last;
