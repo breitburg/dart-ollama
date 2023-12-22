@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:ollama/src/models/completion.dart';
+import 'package:ollama/src/models/parameters.dart';
+
 class Ollama {
   /// The base URL for the Ollama API.
   final Uri baseUrl;
@@ -21,9 +24,15 @@ class Ollama {
   Stream<CompletionChunk> generate(
     String prompt, {
     required String model,
+    List<String>? images,
     String? system,
     String? format,
-    bool stream = true,
+    String? template,
+    ModelOptions? options,
+    // If true, the response will be streamed as it is generated.
+    // If false, the response will be returned as a single chunk at the end.
+    bool chunked = true,
+    bool raw = false,
     List<int>? context,
   }) async* {
     final url = baseUrl.resolve('api/generate');
@@ -36,9 +45,13 @@ class Ollama {
       'prompt': prompt,
       'model': model,
       'system': system,
-      'stream': stream,
+      'stream': chunked,
       'context': context,
       'format': format,
+      'raw': raw,
+      'images': images,
+      'template': template,
+      'options': options?.toJson(),
     }));
 
     final response = await request.close();
@@ -47,107 +60,5 @@ class Ollama {
       final json = jsonDecode(chunk);
       yield CompletionChunk.fromJson(json);
     }
-  }
-
-  /// Ask a question and get a single response.
-  ///
-  /// This is a convenience method that will return the last response
-  Future<CompletionChunk> ask(
-    String prompt, {
-    required String model,
-    String? system,
-    String? format,
-    List<int>? context,
-  }) async {
-    final stream = generate(
-      prompt,
-      model: model,
-      system: system,
-      context: context,
-      format: format,
-      stream: false,
-    );
-
-    return await stream.last;
-  }
-}
-
-class CompletionChunk {
-  final String text;
-  final String model;
-  final DateTime createdAt;
-  final CompletionDetails? details;
-
-  CompletionChunk({
-    required this.model,
-    required this.createdAt,
-    required this.text,
-    this.details,
-  });
-
-  factory CompletionChunk.fromJson(Map<String, dynamic> json) {
-    return CompletionChunk(
-      model: json['model'],
-      createdAt: DateTime.parse(json['created_at']),
-      text: json['response'],
-      details: json['done'] ? CompletionDetails.fromJson(json) : null,
-    );
-  }
-
-  @override
-  String toString() => text;
-}
-
-class CompletionDetails {
-  final Duration? totalDuration;
-  final Duration? loadDuration;
-  final int? sampleCount;
-  final Duration? sampleDuration;
-  final int? promptEvalCount;
-  final Duration? promptEvalDuration;
-  final int? evalCount;
-  final Duration? evalDuration;
-  final List<int>? context;
-
-  CompletionDetails({
-    this.totalDuration,
-    this.loadDuration,
-    this.sampleCount,
-    this.sampleDuration,
-    this.promptEvalCount,
-    this.promptEvalDuration,
-    this.evalCount,
-    this.evalDuration,
-    this.context,
-  });
-
-  /// The number of tokens generated per second.
-  double? get speed {
-    if (evalCount == null || evalDuration == null) return null;
-    return evalCount! / evalDuration!.inSeconds;
-  }
-
-  factory CompletionDetails.fromJson(Map<String, dynamic> json) {
-    return CompletionDetails(
-      totalDuration: json['total_duration'] != null
-          ? Duration(microseconds: json['total_duration'])
-          : null,
-      loadDuration: json['load_duration'] != null
-          ? Duration(microseconds: json['load_duration'])
-          : null,
-      sampleCount: json['sample_count'],
-      sampleDuration: json['sample_duration'] != null
-          ? Duration(microseconds: json['sample_duration'])
-          : null,
-      promptEvalCount: json['prompt_eval_count'],
-      promptEvalDuration: json['prompt_eval_duration'] != null
-          ? Duration(microseconds: json['prompt_eval_duration'])
-          : null,
-      evalCount: json['eval_count'],
-      evalDuration: json['eval_duration'] != null
-          ? Duration(microseconds: json['eval_duration'])
-          : null,
-      context: json['context'] != null ? List<int>.from(json['context']) : null,
-    );
   }
 }
