@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:ollama/src/models/chat_message.dart';
 import 'package:ollama/src/models/completion.dart';
 import 'package:ollama/src/models/parameters.dart';
 
@@ -50,6 +51,41 @@ class Ollama {
       'format': format,
       'raw': raw,
       'images': images,
+      'template': template,
+      'options': options?.toJson(),
+    }));
+
+    final response = await request.close();
+
+    await for (final chunk in response.transform(utf8.decoder)) {
+      final json = jsonDecode(chunk);
+      yield CompletionChunk.fromJson(json);
+    }
+  }
+
+  /// Generate the next message in a chat with a provided model.
+  ///
+  /// This is a streaming endpoint, so there will be a series of responses.
+  /// The final response object will include statistics and additional data from the request.
+  Stream<CompletionChunk> chat(
+    List<ChatMessage> messages, {
+    required String model,
+    String? format,
+    String? template,
+    ModelOptions? options,
+    bool chunked = true,
+  }) async* {
+    final url = baseUrl.resolve('api/chat');
+
+    // Open a POST request to a server and send the request body.
+    final request = await _client.postUrl(url);
+
+    request.headers.contentType = ContentType.json;
+    request.write(jsonEncode({
+      'messages': messages.map((message) => message.toJson()).toList(),
+      'model': model,
+      'stream': chunked,
+      'format': format,
       'template': template,
       'options': options?.toJson(),
     }));

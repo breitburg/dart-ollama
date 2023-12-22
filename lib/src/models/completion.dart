@@ -1,21 +1,32 @@
+import 'package:ollama/src/models/chat_message.dart';
+
 /// Represents each chunk of the completion that is generated.
 class CompletionChunk {
-  final String text;
+  final String? _text;
+  final ChatMessage? message;
   final String model;
   final DateTime createdAt;
   final CompletionDetails? details;
 
   /// Constructor for [CompletionChunk].
   ///
-  /// The parameters [model], [createdAt], and [text] are required.
-  /// The [details] parameter is only applicable when the response is completely generated
-  /// (i.e., when `done` is true in the response JSON)
+  /// The parameters [model], [createdAt] are required.
+  /// The parameters [text] and [message] are optional, but at least one of them must be provided.
+  /// The parameter [details] is optional.
   CompletionChunk({
     required this.model,
     required this.createdAt,
-    required this.text,
+    String? text,
+    this.message,
     this.details,
-  });
+  })  : assert(text != null || message != null),
+        _text = text;
+
+  /// The text of the completion chunk.
+  ///
+  /// If [text] is provided, it will be returned.
+  /// Otherwise, the content of [message] will be returned.
+  String get text => _text ?? message!.content;
 
   /// Factory constructor to create a [CompletionChunk] from JSON data.
   factory CompletionChunk.fromJson(Map<String, dynamic> json) {
@@ -23,6 +34,9 @@ class CompletionChunk {
       model: json['model'],
       createdAt: DateTime.parse(json['created_at']),
       text: json['response'],
+      message: json['message'] != null
+          ? ChatMessage.fromJson(json['message'])
+          : null,
       details: json['done'] ? CompletionDetails.fromJson(json) : null,
     );
   }
