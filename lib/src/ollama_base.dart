@@ -22,6 +22,17 @@ class Ollama {
   /// This is a streaming endpoint, so will be a series of responses.
   /// The final response object will include statistics and additional
   /// data from the request.
+  ///
+  /// [prompt] is the prompt to use for the response.
+  /// [model] is the model to use for the response.
+  /// [images] is a list of image URLs to use for the response.
+  /// [system] is the system to use for the response.
+  /// [format] is the format to use for the response.
+  /// [template] is the template to use for the response.
+  /// [options] is the options to use for the response.
+  /// [chunked] is whether the response should be streamed as it is generated.
+  /// [raw] is useful when you want to define your own template.
+  /// [context] is the context to use for the response.
   Stream<CompletionChunk> generate(
     String prompt, {
     required String model,
@@ -67,6 +78,13 @@ class Ollama {
   ///
   /// This is a streaming endpoint, so there will be a series of responses.
   /// The final response object will include statistics and additional data from the request.
+  ///
+  /// [messages] is a list of [ChatMessage]s that have been sent so far.
+  /// [model] is the model to use for the response.
+  /// [format] is the format to use for the response.
+  /// [template] is the template to use for the response.
+  /// [options] is the options to use for the response.
+  /// [chunked] is whether the response should be streamed as it is generated.
   Stream<CompletionChunk> chat(
     List<ChatMessage> messages, {
     required String model,
@@ -82,7 +100,7 @@ class Ollama {
 
     request.headers.contentType = ContentType.json;
     request.write(jsonEncode({
-      'messages': messages.map((message) => message.toJson()).toList(),
+      'messages': [for (final message in messages) message.toJson()],
       'model': model,
       'stream': chunked,
       'format': format,
@@ -96,5 +114,49 @@ class Ollama {
       final json = jsonDecode(chunk);
       yield CompletionChunk.fromJson(json);
     }
+  }
+
+  /// Generate embeddings from a model for a given prompt.
+  ///
+  /// Send a POST request to the /api/embeddings endpoint which returns a list of doubles representing
+  /// the multi-dimensional word representations in the model's vocabulary.
+  ///
+  /// [prompt] is the text to generate embeddings for.
+  /// [model] is the name of the model to generate embeddings.
+  /// [options] (optional) is additional model parameters. See Modelfile documentation for details.
+  ///
+  /// Example:
+  /// ```dart
+  /// final client = Ollama();
+  /// final embeddings = await client.embeddings(
+  ///   'Here is an article about llamas...',
+  ///   model: 'llama2'
+  /// );
+  /// print(embeddings);
+  /// ```
+  ///
+  /// Returns a [Future] that completes with a list of doubles representing the generated embeddings.
+  Future<List<double>> embeddings(String prompt,
+      {required String model, ModelOptions? options}) async {
+    final url = baseUrl.resolve('api/embeddings');
+
+    // Open a POST request to a server and send the request body.
+    final request = await _client.postUrl(url);
+
+    request.headers.contentType = ContentType.json;
+    request.write(jsonEncode({
+      'model': model,
+      'prompt': prompt,
+      'options': options?.toJson(),
+    }));
+
+    final response = await request.close();
+
+    final responseBody = await response.transform(utf8.decoder).join();
+    final jsonResponse = jsonDecode(responseBody);
+
+    List<double> embeddings = List<double>.from(jsonResponse['embedding']);
+
+    return embeddings;
   }
 }
