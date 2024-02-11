@@ -1,11 +1,3 @@
-/// A ChatMessage class that represents a message in a chat.
-///
-/// A ChatMessage object can contain the following properties:
-/// * `role`: the role of the message sender. It can be either system,
-/// user, or assistant.
-/// * `content`: the content of the message.
-/// * `images` (optional): a list of images included in the message,
-/// used primarily for multimodal models such as llava.
 class ChatMessage {
   final String role;
   final String content;
@@ -16,7 +8,7 @@ class ChatMessage {
   /// The [role] and [content] are required parameters.
   /// The [images] parameter is optional.
   ChatMessage({required this.role, required this.content, this.images})
-      : assert(['system', 'user', 'assistant'].contains(role));
+      : assert(['system', 'user', 'assistant'].contains(role), 'Invalid role');
 
   /// Creates a new instance of `ChatMessage` from a json object.
   ///

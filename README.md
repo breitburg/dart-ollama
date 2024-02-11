@@ -1,24 +1,33 @@
 # Ollama for Dart
 
-This library provides an interface for interacting with Ollama, a tool that allows you to run LLMs (Large Language Models) locally. With this library, you can create an Ollama instance and use it to generate responses.
+Ollama is a Dart library for facilitating local execution of Large Language Models (LLMs). Users can use the library to instantiate Ollama for response generation purposes.
+
+# Features
+- Generate completions for a given prompt or messages
+- Generating vector embeddings
 
 ## Usage
 
-If you want to generate response from a model, you can use the `generate` method. This method takes a prompt and a model name, and returns a `Stream<CompletionChunk>`.
+After importing the Ollama library,
 
 ```dart
 import 'package:ollama/ollama.dart';
+```
 
-void main() async {
-  // Create an Ollama instance
-  final ollama = Ollama();
+you can instantiate Ollama with the following code:
 
-  // Generate a response from a model
-  final response = ollama.generate('Tell me about llamas', model: 'llama2');
+```dart
+var ollama = Ollama();
+```
 
-  // Print the response
-  await for (final chunk in response) {
-    stdout.write(chunk.text);
-  }
-}
+### Generate Completions
+
+To generate completions for a given prompt, use the `generate` method:
+
+```dart
+final result = await ollama.generate(
+  'What is the capital of France?', 
+   model: 'base_model',
+);
+print(result);
 ```
