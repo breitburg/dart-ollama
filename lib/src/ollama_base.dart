@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ollama/src/models/chat_message.dart';
+import 'package:ollama/src/models/message.dart';
 import 'package:ollama/src/models/completion.dart';
 import 'package:ollama/src/models/parameters.dart';
 
@@ -130,7 +130,7 @@ class Ollama {
   /// final client = Ollama();
   /// final embeddings = await client.embeddings(
   ///   'Here is an article about llamas...',
-  ///   model: 'llama2'
+  ///   model: 'llama3'
   /// );
   /// print(embeddings);
   /// ```

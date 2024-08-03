@@ -1,4 +1,4 @@
-import 'package:ollama/src/models/chat_message.dart';
+import 'package:ollama/src/models/message.dart';
 
 /// Represents each chunk of the completion that is generated.
 class CompletionChunk {

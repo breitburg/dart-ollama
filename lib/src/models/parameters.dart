@@ -18,7 +18,7 @@ class ModelOptions {
   final int? numCtx;
 
   /// The number of GQA groups in the transformer layer.
-  /// Required for some models, for example it is 8 for llama2:70b
+  /// Required for some models, for example it is 8 for llama3:70b
   final int? numGqa;
 
   /// The number of layers to send to the GPU(s).

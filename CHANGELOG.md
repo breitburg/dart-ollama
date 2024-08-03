@@ -1,3 +1,7 @@
+## 1.0.3
+
+- Bug where `ChatMessage` and other models were unaccessible is fixed.
+
 ## 1.0.2
 
 - Add embeddings and chat
