@@ -1,3 +1,7 @@
+## 1.0.4
+
+- Improved `README.md`.
+
 ## 1.0.3
 
 - Bug where `ChatMessage` and other models were unaccessible is fixed.
